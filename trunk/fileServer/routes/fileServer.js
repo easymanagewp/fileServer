@@ -75,7 +75,7 @@ router.post('/upload.do', mulitipartMiddleware,function(req, res, next) {
 
     function response(){
         if(eachIndex == countFile) {
-            res.json(result);
+            res.render("uploadSuccess",{result:JSON.stringify(result)});
         }
     }
 
@@ -97,7 +97,7 @@ router.post('/upload.do', mulitipartMiddleware,function(req, res, next) {
                 eachIndex ++;
                 fs.writeFileSync(currentFileStoreRealDir+ path.sep +fileName,fs.readFileSync(file.path));
                 fs.unlinkSync(file.path);
-                result[file.originalFilename] = 'ok';
+                result[key] = storedFile.id;
                 response();
             }
         }(file,currentFileStoreRealDir,fileName)).catch(function(file,currentFileStoreRealDir,fileName){
@@ -119,8 +119,31 @@ router.get('/download/:id.do',function(req,res){
     fileDao.findByIdAsync(fileId).then(function(storeFile){
         var filePath = storeFile.path;
         var fileRealPath = path.join(evn.fileStoreDir,filePath);
-        console.info(fileRealPath);
         res.download(fileRealPath,storeFile.name);
+    });
+});
+
+/*
+    文件查看
+ */
+router.get('/view/:id.do',function(req,res){
+    var fileId = req.params.id;
+
+    fileDao.findByIdAsync(fileId).then(function(storeFile){
+        var filePath = storeFile.path;
+        var fileRealPath = path.join(evn.fileStoreDir,filePath);
+
+        fs.readFile(fileRealPath, "binary", function(error, file) {
+            if(error) {
+                res.writeHead(500, {"Content-Type": "text/plain"});
+                res.write(error + "\n");
+                res.end();
+            } else {
+                res.writeHead(200, {"Content-Type": "image/png"});
+                res.write(file, "binary");
+                res.end();
+            }
+        });
     });
 });
 

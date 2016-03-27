@@ -97,7 +97,10 @@ router.post('/upload.do', mulitipartMiddleware,function(req, res, next) {
                 eachIndex ++;
                 fs.writeFileSync(currentFileStoreRealDir+ path.sep +fileName,fs.readFileSync(file.path));
                 fs.unlinkSync(file.path);
-                result[key] = storedFile.id;
+                result[key] = {
+                    id : storedFile.id,
+                    name : storedFile.name
+                };
                 response();
             }
         }(file,currentFileStoreRealDir,fileName)).catch(function(file,currentFileStoreRealDir,fileName){
